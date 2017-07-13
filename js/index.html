@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--include react and jquery -->
+    <script src="https://fb.me/react-15.0.0.js"></script>
+    <script src="https://fb.me/react-dom-15.0.0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!--include css-->
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <title>Bloomon Example</title>
+</head>
+<body>
+
+<div id="container">
+    <!-- This element's contents will be replaced by react -->
+</div>
+<script type="text/babel">
+    //set an array to store ordered products
+
+    var orderedProducts = new Array();
+
+    //create the Service
+    var ServiceChooser = React.createClass({
+        //set total to 0 to start
+        getInitialState: function () {
+            return {total: 0};
+        },
+//set addTotal function
+        addTotal: function (price) {
+            this.setState({total: (this.state.total + price )});
+        },
+//function that will render the products
+        render: function () {
+
+            var self = this;
+
+            var products = this.props.items.map(function (s) {
+
+                // Create a new Service component for each item in the product array.
+                //set the product pruice as the actual price plus tax
+                var productPrice = (s.price + s.pricetax);
+                //set the products properties and linked funcitons
+                return <Service id={s.id} title={s.title} price={productPrice} active={s.active} addTotal={self.addTotal} description={s.desc} img={'http://www.bloomon.co.uk/'+s.img}/>;
+            });
+
+            //return the div  with the product list
+            return <div>
+                        <h1>Our products</h1>
+                        <div id="alert"></div>
+                        <div id="products">
+                            {products}
+                        </div>
+                        <p id="total">Total <b>${this.state.total/100}</b></p>
+                        <div id="checkout">Proceed to checkout</div>
+                    </div>;
+
+        }
+    });
+
+
+    //create the product service
+    var Service = React.createClass({
+        //set active as false
+        getInitialState: function () {
+            return {active: false};
+        },
+        /**
+         * Adds/substracts a products price to total and pushes or removes it from orderProducts array
+         */
+        clickHandler: function () {
+            //change active
+            var active = !this.state.active;
+            this.setState({active: active});
+
+            // Notify the ServiceChooser, by calling its addTotal method
+            this.props.addTotal(active ? this.props.price : -this.props.price);
+
+            //if the product is now active add it to orderedProducts if not remove it
+            if (active) {
+                //add to ordered products array
+                orderedProducts.push(this.props.id);
+            } else {
+                var index = orderedProducts.indexOf(this.props.id);
+                if (index > -1) {
+                    orderedProducts.splice(index, 1);
+                }
+            }
+
+        },
+        //return the product div
+        render: function () {
+            return  <div id={this.props.id} className={ this.state.active ? 'active' : '' } onClick={this.clickHandler}>
+                        <div>{this.props.title} <b>£ {this.props.price/100}</b> </div>
+                        <img src={this.props.img} alt={this.props.title}/>
+                        <p>{this.props.description}</p>
+                        <div class='clear'></div>
+                    </div>;
+        }
+    });
+
+    //product array imported from  https://www.bloomon.co.uk/api3/f2/product?productType=1
+    var products =[{"id":1,"title":"Small bouquet","desc":"Choose our small size which will fit perfectly for a small dining table or mantlepiece.","size_desc":"small","img":"\/img\/db\/size-s.jpg","imgmobile":"\/img\/db\/size-s-mobile.png","addon":{"id":6,"title":"Small vase","desc":"","size_desc":"small","price":1746,"pricetax":349},"images":{"data":[{"id":1,"product_id":1,"imagetype":1,"imageurl":"size-s.jpg","created_at":1421262876,"updated_at":1421262876}]},"price":1746,"pricetax":349,"producttype":1,"priority":999,"box_deliverable":true,"now":1499715180,"created_at":1421262876,"updated_at":1480580354},{"id":2,"title":"Medium bouquet","desc":"The medium is our bestseller and is suitable for most interiors.","size_desc":"medium","img":"\/img\/db\/size-m.jpg","imgmobile":"\/img\/db\/size-m-mobile.png","addon":{"id":7,"title":"Medium vase","desc":"","size_desc":"medium","price":2083,"pricetax":417},"images":{"data":[{"id":2,"product_id":2,"imagetype":1,"imageurl":"size-m.jpg","created_at":1421262876,"updated_at":1421262876}]},"price":2079,"pricetax":416,"producttype":1,"priority":998,"box_deliverable":true,"now":1499715180,"created_at":1421262876,"updated_at":1480580354},{"id":3,"title":"Large bouquet","desc":"Want our flowers to be even more noticeable in your home? Go for the large.","size_desc":"large","img":"\/img\/db\/size-l.jpg","imgmobile":"\/img\/db\/size-l-mobile.png","addon":{"id":8,"title":"Large vase","desc":"","size_desc":"large","price":2500,"pricetax":500},"images":{"data":[{"id":3,"product_id":3,"imagetype":1,"imageurl":"size-l.jpg","created_at":1421262876,"updated_at":1421262876}]},"price":2663,"pricetax":532,"producttype":1,"priority":997,"box_deliverable":true,"now":1499715180,"created_at":1421262876,"updated_at":1483493534}];
+
+    // Render the ServiceChooser component, and pass the array of products
+
+    ReactDOM.render(
+    < ServiceChooser items = {products} / >,
+            document.getElementById('container')
+    ); //plain js with Jquery example
+    $('#checkout').on('click', function () {
+        console.log('test');
+        //if cart empty set alert
+        if (orderedProducts.length === 0) {
+            $('#alert').html('Please select a product.');
+            $('#alert').show();
+        }
+        //if not remove alert
+        else {
+            $('#container').hide();
+            $('#alert').hide();
+            $('#checkoutForm').show();
+            $('#checkoout').hide();
+        }
+
+        //
+    })
+
+</script>
+<div id="checkoutForm">This is a simple code sample, please feel free to get in touch with me at <a href="mailto:lucastortora@gmail.com" target="_blank">lucastortora@gmail.com</a> if you'd like to see more or request a coding test.</div>
+
+</body>
+</html>
